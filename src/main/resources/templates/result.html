@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Result</title>
+</head>
+<body>
+<h1>Winners!</h1>
+<ul>
+    <li th:each="entry : ${winners}">
+        <b th:text="${entry.key}"></b>: <span th:text="${entry.value}"></span>
+    </li>
+</ul>
+<a href="/">Return</a>
+</body>
+</html>
