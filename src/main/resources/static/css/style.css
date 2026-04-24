@@ -1,8 +1,17 @@
 body {
   font-family: Arial, sans-serif;
-  margin: 20px;
   background-color: #fafafa;
   color: #333;
+  margin: 0;
+}
+
+.page {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
 }
 
 h1 {
@@ -104,4 +113,5 @@ button svg {
   align-items: center;
   gap: 10px;
 }
+
 
