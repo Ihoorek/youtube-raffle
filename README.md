@@ -9,7 +9,7 @@ The application randomly selects up to 3 winners from the list of commenters for
 - Safe API key management using environment variables
 
 ## Technologies
-- Java 21
+- Java 25
 - Spring Boot 3.5
 - Maven
 - Thymeleaf
