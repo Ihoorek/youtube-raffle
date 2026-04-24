@@ -5,7 +5,6 @@ import com.example.youtube_raffle.common.exception.NoCommentsFoundException;
 import com.example.youtube_raffle.common.model.YoutubeProperties;
 import com.google.api.services.youtube.YouTube;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -42,7 +41,6 @@ public class RaffleService {
         YouTube youtube = buildYouTubeClient();
         List<String> commenters = new ArrayList<>();
         String apiKey = youtubeProperties.getKey();
-        System.out.println("API KEY = " + youtubeProperties.getKey());
         String nextPageToken = null;
         do {
             var response = youtube.commentThreads()
