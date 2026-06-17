@@ -1,9 +1,9 @@
 package com.example.youtube_raffle.service;
 
-import com.example.youtube_raffle.common.exception.InvalidYoutubeUrlException;
-import com.example.youtube_raffle.common.exception.NoCommentsFoundException;
+import com.example.youtube_raffle.common.exception.YoutubeApiException;
 import com.example.youtube_raffle.common.model.YoutubeProperties;
 import com.google.api.services.youtube.YouTube;
+import com.google.api.services.youtube.model.CommentThreadListResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -23,10 +23,8 @@ public class RaffleService {
     private YouTube buildYouTubeClient() {
         return new YouTube.Builder(
                 new com.google.api.client.http.javanet.NetHttpTransport(),
-                new com.google.api.client.json.jackson2.JacksonFactory(),
-                request -> {
-                }
-        ).setApplicationName("youtube-raffle")
+                new com.google.api.client.json.jackson2.JacksonFactory(), request -> {
+        }).setApplicationName("youtube-raffle")
                 .build();
     }
 
@@ -34,23 +32,28 @@ public class RaffleService {
         String pattern = "v=([a-zA-Z0-9_-]{11})";
         java.util.regex.Matcher matcher = java.util.regex.Pattern.compile(pattern).matcher(url);
         if (matcher.find()) return matcher.group(1);
-        throw new InvalidYoutubeUrlException("Invalid YouTube URL");
+        throw YoutubeApiException.internalError("Invalid YouTube URL");
     }
 
-    public List<String> getCommenters(String videoId) throws IOException {
+    public List<String> getCommenters(String videoId) {
         YouTube youtube = buildYouTubeClient();
         List<String> commenters = new ArrayList<>();
         String apiKey = youtubeProperties.getKey();
         String nextPageToken = null;
         do {
-            var response = youtube.commentThreads()
-                    .list("snippet")
-                    .setVideoId(videoId)
-                    .setTextFormat("plainText")
-                    .setMaxResults(100L)
-                    .setPageToken(nextPageToken)
-                    .setKey(apiKey)
-                    .execute();
+            CommentThreadListResponse response = null;
+            try {
+                response = youtube.commentThreads()
+                        .list("snippet")
+                        .setVideoId(videoId)
+                        .setTextFormat("plainText")
+                        .setMaxResults(100L)
+                        .setPageToken(nextPageToken)
+                        .setKey(apiKey)
+                        .execute();
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
             response.getItems()
                     .stream()
                     .map(th -> th.getSnippet().getTopLevelComment().getSnippet().getAuthorDisplayName())
@@ -60,14 +63,13 @@ public class RaffleService {
         return commenters;
     }
 
-    public Map<String, String> pickWinners(List<String> commenters) {
+    public Map<String, String> pickWinners(String videoId) {
+        String videoUrl = extractVideoId(videoId);
+        List<String> commenters = getCommenters(videoUrl);
         List<String> list = new ArrayList<>(
                 commenters.stream()
                         .distinct()
                         .toList());
-        if (list.isEmpty()) {
-            throw new NoCommentsFoundException("This video has not been commented yet");
-        }
         Collections.shuffle(list);
         Map<String, String> winners = new LinkedHashMap<>();
         for (int i = 0; i < Math.min(3, list.size()); i++) {

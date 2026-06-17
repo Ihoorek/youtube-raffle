@@ -2,15 +2,15 @@ package com.example.youtube_raffle.controller;
 
 import com.example.youtube_raffle.service.RaffleService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.GetMapping;
 
-import java.io.IOException;
-import java.util.List;
 import java.util.Map;
 
 @Controller
@@ -26,11 +26,8 @@ public class RaffleController {
     }
 
     @PostMapping("/raffle")
-    public String raffle(@RequestParam("videoUrl") String videoUrl, Model model) throws IOException {
-        String videoId = raffleService.extractVideoId(videoUrl);
-        List<String> commenters = raffleService.getCommenters(videoId);
-        Map<String, String> winners = raffleService.pickWinners(commenters);
-        model.addAttribute("winners", winners);
+    public String raffle(@RequestParam("videoUrl") String videoUrl, Model model) {
+        model.addAttribute("winners", raffleService.pickWinners(videoUrl));
         return "result";
     }
 }
