@@ -52,7 +52,7 @@ public class RaffleService {
                         .setKey(apiKey)
                         .execute();
             } catch (IOException e) {
-                throw new RuntimeException(e);
+                throw new YoutubeApiException();
             }
             response.getItems()
                     .stream()
@@ -66,10 +66,12 @@ public class RaffleService {
     public Map<String, String> pickWinners(String videoId) {
         String videoUrl = extractVideoId(videoId);
         List<String> commenters = getCommenters(videoUrl);
-        List<String> list = new ArrayList<>(
-                commenters.stream()
+        if(commenters.isEmpty()){
+            throw YoutubeApiException.notFound("No comments on video yet");
+        }
+        List<String> list = commenters.stream()
                         .distinct()
-                        .toList());
+                        .toList();
         Collections.shuffle(list);
         Map<String, String> winners = new LinkedHashMap<>();
         for (int i = 0; i < Math.min(3, list.size()); i++) {
